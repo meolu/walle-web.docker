@@ -151,8 +151,10 @@ VOLUME /var/sock/mysqld
 VOLUME /etc/mysql/conf.d
 VOLUME /etc/mysql/docker-default.d
 
+ENV MYSQL_ROOT_PASSWORD password
+RUN /docker-entrypoint.sh
 
 ##
 ## Entrypoint
 ##
-ENTRYPOINT ["/docker-entrypoint.sh"]
+#ENTRYPOINT ["/docker-entrypoint.sh"]

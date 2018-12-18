@@ -244,21 +244,24 @@ else
 	log "info" "No existing MySQL data directory found. Setting up MySQL for the first time."
 
 	# Create datadir if not exist yet
-	if [ ! -d "${DB_DATA_DIR}" ]; then
+	#if [ ! -d "${DB_DATA_DIR}" ]; then
 		log "info" "Creating empty data directory in: ${DB_DATA_DIR}."
 		run "mkdir -p ${DB_DATA_DIR}"
 		run "chown -R ${MY_USER}:${MY_GROUP} ${DB_DATA_DIR}"
-		run "chmod 0777 ${MY_USER}:${MY_GROUP} ${DB_DATA_DIR}"
-	fi
+		run "chmod 0777 ${DB_DATA_DIR}"
+	#fi
 
 
 	# Install Database
 	run "mysqld --initialize-insecure --datadir=${DB_DATA_DIR} --user=${MY_USER}"
+	echo "mysqld --initialize-insecure --datadir=${DB_DATA_DIR} --user=${MY_USER}"
+	sleep 5s
 
 
 	# Start server
-	run "mysqld --skip-networking &"
-
+	run "mysqld --skip-networking --datadir=${DB_DATA_DIR} --socket=/var/sock/mysqld/mysqld.sock &"
+	sleep 10s
+	ps aux|grep mysql
 
 	# Wait at max 60 seconds for it to start up
 	i=0
