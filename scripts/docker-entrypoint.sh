@@ -255,12 +255,10 @@ else
 	# Install Database
 	run "mysqld --initialize-insecure --datadir=${DB_DATA_DIR} --user=${MY_USER}"
 	echo "mysqld --initialize-insecure --datadir=${DB_DATA_DIR} --user=${MY_USER}"
-	sleep 5s
 
 
 	# Start server
 	run "mysqld --skip-networking --datadir=${DB_DATA_DIR} --socket=/var/sock/mysqld/mysqld.sock &"
-	sleep 10s
 	ps aux|grep mysql
 
 	# Wait at max 60 seconds for it to start up
@@ -287,12 +285,12 @@ else
 
 	# Bootstrap MySQL
 	log "info" "Setting up root user permissions."
-	echo "DELETE FROM mysql.user ;" | mysql --protocol=socket -uroot
-	echo "CREATE USER 'root'@'%' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}' ;" | mysql --protocol=socket -uroot
-	echo "GRANT ALL ON *.* TO 'root'@'%' WITH GRANT OPTION ;" | mysql --protocol=socket -uroot
-	echo "DROP DATABASE IF EXISTS test ;" | mysql --protocol=socket -uroot
+	echo "CREATE USER 'user'@'%' IDENTIFIED BY 'password' ;" | mysql --protocol=socket -uroot
+	echo "GRANT ALL ON *.* TO 'user'@'%' WITH GRANT OPTION ;" | mysql --protocol=socket -uroot
+	echo "CREATE DATABASE IF NOT EXISTS walle;" | mysql --protocol=socket -uroot
 	echo "FLUSH PRIVILEGES ;" | mysql --protocol=socket -uroot
 
+	mysql -uuser -ppassword -hlocalhost -P3306 -e'show databases'
 
 	# Shutdown MySQL
 	log "info" "Shutting down MySQL."
@@ -324,4 +322,4 @@ fi
 ### Start
 ###
 log "info" "Starting $(mysqld --version)"
-exec mysqld
+nohup mysqld --socket=/var/sock/mysqld/mysqld.sock &

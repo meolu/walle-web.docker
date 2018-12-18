@@ -15,6 +15,25 @@ LABEL \
 	license="MIT" \
 	build-date="2017-09-28"
 
+COPY ./scripts/*.sh /
+RUN /yum.sh
+RUN /ssh.sh
+
+#RUN /nginx.sh
+RUN rpm -Uvh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm
+RUN yum install -y nginx
+RUN systemctl enable sshd
+
+
+# init work user & ssh
+USER work
+WORKDIR /home/work/
+RUN mkdir /home/work/.ssh
+RUN ssh-keygen -t rsa -P '' -f /home/work/.ssh/id_rsa
+RUN sudo chmod 755 /home/work/ && sudo chmod 700 /home/work/.ssh/
+RUN cat /home/work/.ssh/id_rsa.pub >> /home/work/.ssh/authorized_keys
+RUN sudo chmod 644 /home/work/.ssh/authorized_keys
+
 
 ###
 ### Envs
@@ -23,6 +42,7 @@ LABEL \
 # Version
 # Check for Updates:
 # https://dev.mysql.com/downloads/repo/yum/
+USER root
 ENV YUM_REPO_URL="https://dev.mysql.com/get/mysql57-community-release-el7-10.noarch.rpm "
 
 # User/Group
@@ -139,7 +159,7 @@ COPY ./scripts/docker-entrypoint.sh /
 ##
 ## Ports
 ##
-EXPOSE 3306
+#EXPOSE 3306
 
 
 ##
@@ -154,7 +174,25 @@ VOLUME /etc/mysql/docker-default.d
 ENV MYSQL_ROOT_PASSWORD password
 RUN /docker-entrypoint.sh
 
-##
-## Entrypoint
-##
-#ENTRYPOINT ["/docker-entrypoint.sh"]
+USER mysql
+RUN mysqld --socket=/var/sock/mysqld/mysqld.sock  
+RUN ps aux|grep mysql
+#
+###
+### Entrypoint
+###
+##ENTRYPOINT ["/docker-entrypoint.sh"]
+
+# init workdir
+RUN mkdir -p /home/work/workspace/walle-web
+WORKDIR /home/work/workspace/walle-web/
+COPY walle-web/ /home/work/workspace/walle-web/
+
+RUN pwd
+RUN ls -la
+RUN
+RUN ps aux|grep mysql
+RUN mysql -uuser -ppassword -hlocalhost -P3306 -e'show databases;'
+RUN /bin/bash ./admin.sh init
+RUN /bin/bash ./admin.sh migration
+CMD /bin/bash ./admin.sh start
