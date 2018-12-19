@@ -322,4 +322,5 @@ fi
 ### Start
 ###
 log "info" "Starting $(mysqld --version)"
-nohup mysqld --socket=/var/sock/mysqld/mysqld.sock &
+run "mysqld --skip-networking --datadir=${DB_DATA_DIR} --socket=/var/sock/mysqld/mysqld.sock &"
+ps aux|grep mysql
